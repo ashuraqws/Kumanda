@@ -16,11 +16,19 @@ Laptoptaki **PDF veya PowerPoint sunumunu aynı Wi-Fi ağındaki telefondan izle
 ## Gereksinimler
 
 - Windows 10/11
-- [Node.js](https://nodejs.org) 18 veya üzeri (LTS)
+- [Node.js](https://nodejs.org) 18 veya üzeri (LTS), **yalnızca kaynak koddan çalıştırmak veya .exe'yi derlemek için**
 - Windows PowerShell 5.1 (Windows ile gelir)
 - Laptop ve telefon aynı Wi-Fi ağında
 
-## Kurulum ve başlatma
+## Hızlı başlangıç (kurulum yok)
+
+1. [Son sürümden](https://github.com/ashuraqws/Kumanda/releases/latest) **Kumanda.exe** dosyasını indirin.
+2. Çift tıklayın. Panel tarayıcıda QR koduyla açılır; telefonla okutun.
+3. Windows SmartScreen uyarırsa (dosya imzasızdır) **Daha fazla bilgi > Yine de çalıştır** deyin. Güvenlik Duvarı sorarsa **Özel ağlar**'a izin verin.
+
+Node.js veya başka bir şey gerekmez. Kapatmak için siyah pencereyi kapatın.
+
+## Kaynak koddan çalıştırma
 
 ```bat
 git clone https://github.com/ashuraqws/Kumanda.git
@@ -38,7 +46,7 @@ npm install
 npm start
 ```
 
-Ya da klasördeki **`start.bat`** dosyasına çift tıklayın (paketler eksikse kendisi yükler, paneli tarayıcıda açar). Taşınabilir paket kullanıyorsanız ve içinde `node\node.exe` varsa Node.js kurmanıza gerek yoktur; `start.bat` onu otomatik kullanır.
+
 
 ## Kullanım
 
@@ -125,5 +133,5 @@ Sahte bir yardımcı ile sunucuyu uçtan uca sınar (QR/anahtar, eşleşme, yanl
 | `public/panel.html` | Laptop paneli |
 | `public/telefon.html` | Telefon sayfası |
 | `public/style.css` | Ortak stil |
-| `start.bat` | Tek tıkla başlatma |
+| `build.js` | Tek dosyalık `dist/Kumanda.exe`'yi üretir (`npm run build`) |
 | `test/smoke.js` | Uçtan uca duman testi |

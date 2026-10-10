@@ -10,7 +10,19 @@ const { spawn } = require('node:child_process');
 const { WebSocketServer } = require('ws');
 const QRCode = require('qrcode');
 
-const ROOT = __dirname;
+// Tek .exe (Node SEA) içindeyken sayfalar ve helper.ps1 gömülüdür; PowerShell dosya yolu istediği için geçici klasöre çıkarılır.
+let sea = null;
+try { const m = require('node:sea'); if (m.isSea()) sea = m; } catch { /* normal Node */ }
+function unpackAssets() {
+  const dir = path.join(os.tmpdir(), 'Kumanda-app');
+  for (const name of JSON.parse(sea.getAsset('files.json', 'utf8'))) {
+    const file = path.join(dir, name);
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, Buffer.from(sea.getAsset(name)));
+  }
+  return dir;
+}
+const ROOT = sea ? unpackAssets() : __dirname;
 const PORT = Number(process.env.PORT) || 3000;
 const PUBLIC_DIR = path.join(ROOT, 'public');
 const HELPER_PATH = process.env.HELPER_PATH || path.join(ROOT, 'helper.ps1');
@@ -358,6 +370,8 @@ server.listen(PORT, '0.0.0.0', () => {
   for (const u of urls) console.log('   ' + u);
   if (urls.length) QRCode.toString(urls[0], { type: 'terminal', small: true }).then((q) => console.log('Telefon kamerasıyla okutun:\n' + q)).catch(() => {});
   else console.log("   (Ağ bağlantısı bulunamadı — Wi-Fi'ye bağlı olduğunuzdan emin olun.)");
-  console.log('Kapatmak için Ctrl+C\n');
+  console.log('Kapatmak için bu pencereyi kapatın (veya Ctrl+C)\n');
+  // .exe'yi çift tıklayan kişi paneli kendisi açmak zorunda kalmasın (testler NO_OPEN=1 verir).
+  if (sea && !process.env.NO_OPEN) spawn('cmd', ['/c', 'start', '', `http://localhost:${PORT}/`], { windowsHide: true, stdio: 'ignore' }).unref();
   detectLoop();
 });

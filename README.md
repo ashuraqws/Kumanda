@@ -18,11 +18,19 @@ Control the presentation open on your Windows laptop from your phone, over the s
 ## Requirements
 
 - Windows 10/11
-- [Node.js](https://nodejs.org) 18 or newer (LTS)
+- [Node.js](https://nodejs.org) 18 or newer (LTS), **only to run from source or to build the .exe**
 - Windows PowerShell 5.1 (included with Windows)
 - Laptop and phone on the same Wi-Fi network
 
-## Install and run
+## Quick start (no install)
+
+1. Download **Kumanda.exe** from the [latest release](https://github.com/ashuraqws/Kumanda/releases/latest).
+2. Double-click it. The panel opens in your browser with a QR code; scan it with your phone.
+3. If Windows SmartScreen warns (the file is unsigned), choose **More info > Run anyway**. If Windows Firewall asks, allow **Private networks**.
+
+No Node.js or other software needed. Close the black window to quit.
+
+## Run from source
 
 ```bat
 git clone https://github.com/ashuraqws/Kumanda.git
@@ -40,7 +48,7 @@ npm install
 npm start
 ```
 
-Or double-click **`start.bat`**: it installs missing packages and opens the panel in your browser. If you use a portable bundle that contains `node\node.exe`, you don't need Node.js installed; `start.bat` uses it automatically.
+
 
 ## Usage
 
@@ -128,7 +136,7 @@ An end-to-end smoke test using a fake helper (QR/token, pairing, wrong token, un
 | `public/panel.html` | Laptop panel |
 | `public/telefon.html` | Phone page |
 | `public/style.css` | Shared styles |
-| `start.bat` | One-click start |
+| `build.js` | Builds the single `dist/Kumanda.exe` (`npm run build`) |
 | `test/smoke.js` | End-to-end smoke test |
 
 ## License
