@@ -7,7 +7,7 @@ $stdout = New-Object System.IO.StreamWriter ([Console]::OpenStandardOutput()), $
 $stdout.NewLine = "`n"
 $stdout.AutoFlush = $true
 
-Add-Type -AssemblyName System.Windows.Forms, System.Drawing
+Add-Type -AssemblyName System.Windows.Forms, System.Drawing, UIAutomationClient, UIAutomationTypes
 Add-Type -ReferencedAssemblies System.Windows.Forms, System.Drawing -TypeDefinition @'
 using System; using System.Collections.Generic; using System.Runtime.InteropServices; using System.Text;
 using System.Drawing; using System.Drawing.Imaging; using System.Drawing.Drawing2D; using System.IO;
@@ -79,6 +79,25 @@ $pdfApps = 'sumatrapdf','foxitreader','foxitpdfreader','pdfxcview','pdfxedit','x
 
 function Fail([string]$m) { throw (New-Object System.ApplicationException $m) }
 
+# PDF'in içindeki başlık ("Untitled" gibi) sekme adını değiştirebilir; bu yüzden tarayıcının adres çubuğuna da bakılır.
+# detect ~700 ms'de bir çalışır, UI Automation sorgusu (~50 ms) 1.5 sn önbelleğe alınır.
+$script:urlCache = @{}
+function Test-PdfUrl([IntPtr]$h) {
+    $c = $script:urlCache[[string]$h]
+    if ($c -and ((Get-Date) - $c.at).TotalMilliseconds -lt 1500) { return $c.pdf }
+    $pdf = $false
+    try {
+        $root = [Windows.Automation.AutomationElement]::FromHandle($h)
+        $cond = New-Object Windows.Automation.PropertyCondition([Windows.Automation.AutomationElement]::ControlTypeProperty, [Windows.Automation.ControlType]::Edit)
+        foreach ($e in $root.FindAll([Windows.Automation.TreeScope]::Descendants, $cond)) {
+            $v = ($e.GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern)).Current.Value
+            if ($v -match '^[a-z-]+://[^?#]*\.pdf([?#]|$)') { $pdf = $true; break }
+        }
+    } catch { }
+    $script:urlCache[[string]$h] = @{ at = Get-Date; pdf = $pdf }
+    return $pdf
+}
+
 function Info([IntPtr]$h) {
     $title = [W]::Title($h)
     $proc = ''
@@ -87,7 +106,7 @@ function Info([IntPtr]$h) {
     $kind = 'other'
     if ($p -eq 'powerpnt') { $kind = 'powerpoint' }
     elseif ($p -eq 'acrord32' -or $p -eq 'acrobat') { $kind = 'acrobat' }
-    elseif ($browsers -contains $p) { if ($t.Contains('.pdf')) { $kind = 'pdf-browser' } }
+    elseif ($browsers -contains $p) { if ($t.Contains('.pdf') -or (Test-PdfUrl $h)) { $kind = 'pdf-browser' } }
     # Only known viewers: a ".pdf" in any other window's title (chat, editor, notes) must never receive keys.
     elseif ($pdfApps -contains $p -or $p -like 'pdf-xchange*') { $kind = 'pdf-other' }
     [pscustomobject]@{ h = $h; title = $title; process = $proc; kind = $kind }
