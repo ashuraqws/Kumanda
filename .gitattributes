@@ -1,0 +1,1 @@
+# Windows betikleri CRLF kalmalı\n*.bat text eol=crlf\n*.cmd text eol=crlf\n*.ps1 text eol=crlf\n

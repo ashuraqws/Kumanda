@@ -1,0 +1,8 @@
+node_modules/
+data/
+node/
+*.zip
+
+# yerel dosyalar: eski sürüm ve deneme sunumu depoya girmesin
+eski-surum/
+Test Sunumu.pptx

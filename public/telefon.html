@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="tr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<title>Sunum Kumandası</title><link rel="stylesheet" href="/style.css"></head>
+<body><main class="phone">
+<button id="fs" class="fsbtn" aria-label="Tam ekran">⛶</button>
+<div id="banner" class="banner" role="alert" hidden></div>
+<div class="bar"><span aria-live="polite"><i class="dot wait" id="dot"></i><span id="conn">Bağlanılıyor…</span></span><span id="target"></span></div>
+<div id="warn" class="warn" hidden>Desteklenen bir PDF veya PowerPoint sunumu algılanamadı</div>
+<div class="body">
+<div class="screen" id="screen"><span id="wait">Ekran bekleniyor…</span><img id="img" alt="Laptop ekranı" hidden></div>
+<div class="controls">
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+<div class="main"><button class="big" data-c="prev" aria-label="Önceki slayt" disabled>← Geri</button><button class="big go" data-c="next" aria-label="Sonraki slayt" disabled>İleri →</button></div>
+<div class="sub"><button data-c="start" aria-label="Sunuyu başlat" disabled>▶ Başlat</button><button data-c="stop" aria-label="Sunuyu durdur" disabled>■ Durdur</button><button data-c="black" aria-label="Ekranı karart" disabled>Karart</button></div>
+</div></div></main>
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+let token=new URLSearchParams(location.search).get('t');
+try{if(token)sessionStorage.setItem('tok',token);else token=sessionStorage.getItem('tok')}catch(e){}
+if(location.search)history.replaceState(null,'','/telefon');
+const btns=[...document.querySelectorAll('[data-c]')];
+let ws,tries=0,last=0,busy=false,prevUrl,tt,lastNotice=null;
+function conn(t,cls){$('conn').textContent=t;$('dot').className='dot '+cls;btns.forEach(b=>b.disabled=cls!=='ok')}
+function banner(t){$('banner').hidden=!t;$('banner').textContent=t||''}
+function toast(t){$('toast').textContent=t;$('toast').hidden=false;clearTimeout(tt);tt=setTimeout(()=>$('toast').hidden=true,4000)}
+function label(s){const t=s.target;if(!s.supported||!t)return'';const p=t.process||'',k=String(t.kind||'');
+ if(/ppt|powerpoint/i.test(k)||/powerpnt/i.test(p))return'PowerPoint · '+(t.show?'Sunum modu':'Düzenleme görünümü');
+ if(/acro/i.test(p))return'Acrobat';
+ if(/pdf/i.test(k))return'PDF'+(p?' · '+p.replace(/\.exe$/i,'').replace(/^msedge$/i,'Edge'):'');
+ return p||k}
+function status(s){$('warn').hidden=!!s.supported;$('target').textContent=label(s);
+ if(s.notice&&s.notice!==lastNotice)toast(s.notice);lastNotice=s.notice||null}
+function frame(blob){if(busy)return;busy=true;const u=URL.createObjectURL(blob),im=$('img');
+ im.onload=im.onerror=()=>{if(prevUrl)URL.revokeObjectURL(prevUrl);prevUrl=u;busy=false;im.hidden=false;$('wait').hidden=true};im.src=u}
+function stop(m){conn('Bağlantı yok','bad');banner(m)}
+function open(){
+ if(!token)return stop('Eşleşme gerekli: laptoptaki QR kodu okutun.');
+ conn('Bağlanılıyor…','wait');
+ ws=new WebSocket((location.protocol==='https:'?'wss:':'ws:')+'//'+location.host+'/ws?t='+encodeURIComponent(token));
+ ws.binaryType='blob';
+ ws.onopen=()=>{tries=0;banner();conn('Bağlı','ok')};
+ ws.onmessage=e=>{if(typeof e.data==='string'){try{const m=JSON.parse(e.data);if(m.type==='status')status(m)}catch(_){}}else frame(e.data)};
+ ws.onclose=e=>{if(e.code===4401)return stop('Eşleşme geçersiz veya süresi doldu. Laptoptaki QR kodu yeniden okutun.');
+  conn('Bağlantı yok','bad');banner('Bağlantı koptu, yeniden bağlanılıyor…');
+  setTimeout(open,[1000,2000,4000][tries++]||5000)};
+ ws.onerror=()=>{}}
+btns.forEach(b=>b.onclick=()=>{const n=Date.now();if(n-last<120||!ws||ws.readyState!==1)return;last=n;navigator.vibrate?.(10);ws.send(JSON.stringify({type:b.dataset.c}))});
+// Tam ekran: Fullscreen API varsa gerçek tam ekran + yatay kilit; yoksa (iPhone Safari) üst çubuğu ve ikincil düğmeleri gizleyen geniş görünüm.
+const fs=$('fs'),root=document.documentElement;
+function full(on){document.body.classList.toggle('full',on);fs.textContent=on?'✕':'⛶';fs.setAttribute('aria-label',on?'Tam ekrandan çık':'Tam ekran')}
+fs.onclick=async()=>{
+ const on=!document.body.classList.contains('full');
+ try{
+  if(on){if(root.requestFullscreen)await root.requestFullscreen({navigationUI:'hide'});
+   try{await screen.orientation.lock('landscape')}catch(_){}}
+  else{try{screen.orientation.unlock()}catch(_){}if(document.fullscreenElement)await document.exitFullscreen()}
+ }catch(_){}
+ full(on)};
+document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&document.body.classList.contains('full')){try{screen.orientation.unlock()}catch(_){}full(false)}});
+open();
+})();
+</script></body></html>

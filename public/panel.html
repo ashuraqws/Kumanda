@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="tr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sunum Kumandası – Panel</title><link rel="stylesheet" href="/style.css"></head>
+<body><div id="banner" class="banner" role="alert" hidden>Sunucuya bağlanılamıyor</div>
+<div class="wrap"><h1>Sunum Kumandası</h1>
+<div class="grid">
+<section class="card"><h2>Telefonu bağla</h2>
+<img id="qr" class="qr" alt="Telefon eşleştirme QR kodu" src="/api/qr.svg?i=0">
+<div id="urls" class="urls"></div>
+<div id="url" class="url">…</div>
+<p class="muted">Laptop IP: <span id="ips">…</span></p>
+<p class="muted">Telefon ve laptop aynı Wi-Fi ağında olmalı. QR'daki bağlantı her başlatmada değişen bir eşleşme anahtarı içerir.</p></section>
+<section class="card"><h2>Durum</h2>
+<dl aria-live="polite">
+<dt>Bağlı telefon</dt><dd id="phones">0</dd>
+<dt>Aktif pencere</dt><dd id="active">–</dd>
+<dt>Sunum</dt><dd id="det">–</dd>
+<dt>Ekran aktarımı</dt><dd id="stream">–</dd>
+<dt>Yardımcı servis</dt><dd id="helper">–</dd></dl>
+<img id="thumb" class="thumb" alt="Ekran önizlemesi" hidden>
+<button class="danger" id="quit">Uygulamayı kapat</button></section>
+</div>
+<p class="muted">Telefon, laptopun tüm ekranını görür; bildirimler dahil. Gizli içerik açmayın.</p></div>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+<div id="dlg" class="dlg" hidden><div role="dialog" aria-modal="true" aria-label="Onay"><p>Uygulama kapatılsın mı? Telefon bağlantısı kesilir.</p><div class="row"><button id="no">Vazgeç</button><button id="yes" class="danger">Kapat</button></div></div></div>
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+let urls=[],tt,phones=null,tries=0,busy=false,prevUrl,closed=false;
+function toast(t){$('toast').textContent=t;$('toast').hidden=false;clearTimeout(tt);tt=setTimeout(()=>$('toast').hidden=true,3000)}
+function show(i){$('qr').src='/api/qr.svg?i='+i;$('url').textContent=urls[i];[...$('urls').children].forEach((b,j)=>b.setAttribute('aria-pressed',j===i))}
+fetch('/api/pairing').then(r=>r.json()).then(p=>{urls=p.urls||[];$('ips').textContent=(p.ips||[]).join(', ')||'–';
+ if(urls.length>1)urls.forEach((u,i)=>{const b=document.createElement('button');b.textContent=new URL(u).hostname;b.onclick=()=>show(i);$('urls').append(b)});
+ if(urls.length)show(0)}).catch(()=>{});
+const H={ok:'Çalışıyor',starting:'Başlatılıyor…',error:'Hata',off:'Kapalı'};
+function status(s){
+ if(phones!==null&&s.phones!==phones)toast(s.phones>phones?'Telefon bağlandı':'Telefon ayrıldı');
+ phones=s.phones;$('phones').textContent=s.phones;
+ const a=s.active;$('active').textContent='';if(a){const t=document.createElement('span');t.className='t';t.textContent=a.title||'–';t.title=a.title||'';$('active').append(t,a.process||'')}else $('active').textContent='–';
+ $('det').textContent=s.supported&&s.target?'✓ PowerPoint/PDF algılandı: '+(s.target.title||''):'✗ Desteklenen sunum yok';
+ $('stream').textContent=(s.streaming&&s.phones>0?'aktif'+(s.fps?' · '+Math.round(s.fps)+' fps':''):'bekliyor');
+ $('helper').textContent=(H[s.helper]||s.helper)+(s.error?' – '+s.error:'')}
+function frame(blob){if(busy)return;busy=true;const u=URL.createObjectURL(blob),im=$('thumb');
+ im.onload=im.onerror=()=>{if(prevUrl)URL.revokeObjectURL(prevUrl);prevUrl=u;busy=false;im.hidden=false};im.src=u}
+function open(){
+ const ws=new WebSocket((location.protocol==='https:'?'wss:':'ws:')+'//'+location.host+'/ws?panel=1');ws.binaryType='blob';
+ ws.onopen=()=>{if(tries)return location.reload();tries=0;$('banner').hidden=true};
+ ws.onmessage=e=>{if(typeof e.data!=='string')return frame(e.data);let m;try{m=JSON.parse(e.data)}catch(_){return}
+  if(m.type==='status')status(m);else if(m.type==='event'){phones=m.phones;$('phones').textContent=m.phones;toast(m.event==='phone-connected'?'Telefon bağlandı':'Telefon ayrıldı')}};
+ ws.onclose=()=>{if(closed)return;$('banner').hidden=false;setTimeout(open,[1000,2000,4000][tries++]||5000)}}
+$('quit').onclick=()=>{$('dlg').hidden=false;$('no').focus()};
+$('no').onclick=()=>$('dlg').hidden=true;
+$('yes').onclick=()=>{$('dlg').hidden=true;closed=true;fetch('/api/quit',{method:'POST'}).catch(()=>{}).then(()=>{document.body.innerHTML='<div class="wrap"><h1>Uygulama kapatıldı. Bu sekmeyi kapatabilirsiniz.</h1></div>'})};
+open();
+})();
+</script></body></html>
