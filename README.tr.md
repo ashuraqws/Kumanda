@@ -16,21 +16,11 @@ Laptoptaki **PDF veya PowerPoint sunumunu aynı Wi-Fi ağındaki telefondan izle
 ## Gereksinimler
 
 - Windows 10/11
-- [Node.js](https://nodejs.org) 18 veya üzeri (LTS), **yalnızca kaynak koddan çalıştırırken**; release zip'inde hazır gelir
+- [Node.js](https://nodejs.org) 18 veya üzeri (LTS)
 - Windows PowerShell 5.1 (Windows ile gelir)
 - Laptop ve telefon aynı Wi-Fi ağında
 
-## İndirme (Node.js gerekmez)
-
-1. [Releases sayfasından](https://github.com/ashuraqws/Kumanda/releases/latest) **`Kumanda-win-x64.zip`** dosyasını indirin.
-2. Zip'e sağ tık > **Tümünü ayıkla** (zip içinden doğrudan çalıştırmayın).
-3. **`start.bat`** dosyasına çift tıklayın. Node.js zip'in içinde hazır gelir (`node\node.exe`); kurulum ve internet gerekmez.
-4. Windows SmartScreen "bilinmeyen yayımcı" derse **Daha fazla bilgi > Yine de çalıştır**. Güvenlik Duvarı sorarsa **Özel ağlar**'a izin verin.
-5. Panelde çıkan QR'ı telefonla okutun.
-
-Yalnızca 64 bit Windows. Aşağıdaki bölümler kaynak koddan çalıştırma içindir.
-
-## Kurulum ve başlatma (kaynak koddan)
+## Kurulum ve başlatma
 
 ```bat
 git clone https://github.com/ashuraqws/Kumanda.git

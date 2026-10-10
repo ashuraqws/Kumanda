@@ -18,21 +18,11 @@ Control the presentation open on your Windows laptop from your phone, over the s
 ## Requirements
 
 - Windows 10/11
-- [Node.js](https://nodejs.org) 18 or newer (LTS), **only when running from source**; the release zip already includes it
+- [Node.js](https://nodejs.org) 18 or newer (LTS)
 - Windows PowerShell 5.1 (included with Windows)
 - Laptop and phone on the same Wi-Fi network
 
-## Download (no Node.js needed)
-
-1. Download **`Kumanda-win-x64.zip`** from the [Releases page](https://github.com/ashuraqws/Kumanda/releases/latest).
-2. Right-click the zip > **Extract All** (don't run it from inside the zip).
-3. Double-click **`start.bat`**. Node.js is bundled in the zip (`node\node.exe`); nothing to install, no internet needed.
-4. If Windows SmartScreen warns ("unknown publisher"), choose **More info > Run anyway**. If Windows Firewall asks, allow **Private networks**.
-5. Scan the QR code shown in the panel with your phone.
-
-64-bit Windows only. The sections below are for running from source.
-
-## Install and run (from source)
+## Install and run
 
 ```bat
 git clone https://github.com/ashuraqws/Kumanda.git
