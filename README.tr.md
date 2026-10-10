@@ -26,7 +26,7 @@ Laptoptaki **PDF veya PowerPoint sunumunu aynı Wi-Fi ağındaki telefondan izle
 2. Çift tıklayın. Panel tarayıcıda QR koduyla açılır; telefonla okutun.
 3. Windows SmartScreen uyarırsa (dosya imzasızdır) **Daha fazla bilgi > Yine de çalıştır** deyin. Güvenlik Duvarı sorarsa **Özel ağlar**'a izin verin.
 
-Node.js veya başka bir şey gerekmez. Kapatmak için siyah pencereyi kapatın.
+Node.js veya başka bir şey gerekmez. Konsol penceresi açılmaz: kapatmak için panelde **Uygulamayı kapat** düğmesini kullanın (tekrar çift tıklarsanız yalnızca paneli yeniden açar).
 
 ## Kaynak koddan çalıştırma
 

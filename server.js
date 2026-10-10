@@ -22,7 +22,10 @@ function unpackAssets() {
   }
   return dir;
 }
+// .exe konsolsuz (pencere yok) çalışır; kapatma panelden yapılır. Geçersiz stdout yazımı çökertmesin diye log'lar susturulur.
+if (sea) for (const k of ['log', 'warn', 'error']) console[k] = () => {};
 const ROOT = sea ? unpackAssets() : __dirname;
+const openPanel = () => { if (sea && !process.env.NO_OPEN) spawn('cmd', ['/c', 'start', '', `http://localhost:${Number(process.env.PORT) || 3000}/`], { windowsHide: true, stdio: 'ignore' }).unref(); };
 const PORT = Number(process.env.PORT) || 3000;
 const PUBLIC_DIR = path.join(ROOT, 'public');
 const HELPER_PATH = process.env.HELPER_PATH || path.join(ROOT, 'helper.ps1');
@@ -357,6 +360,8 @@ process.on('uncaughtException', (e) => console.error('Hata:', e.message));
 
 server.on('error', (e) => {
   if (e.code === 'EADDRINUSE') {
+    // .exe'nin penceresi yok: Kumanda büyük olasılıkla zaten açık, mevcut paneli göster.
+    if (sea) { openPanel(); process.exit(0); }
     console.error(`\nPort ${PORT} kullanımda. Başka bir uygulamayı kapatın veya PORT değişkeniyle farklı port seçin: set PORT=${PORT + 1} && npm start\n`);
     process.exit(1);
   }
@@ -372,6 +377,6 @@ server.listen(PORT, '0.0.0.0', () => {
   else console.log("   (Ağ bağlantısı bulunamadı — Wi-Fi'ye bağlı olduğunuzdan emin olun.)");
   console.log('Kapatmak için bu pencereyi kapatın (veya Ctrl+C)\n');
   // .exe'yi çift tıklayan kişi paneli kendisi açmak zorunda kalmasın (testler NO_OPEN=1 verir).
-  if (sea && !process.env.NO_OPEN) spawn('cmd', ['/c', 'start', '', `http://localhost:${PORT}/`], { windowsHide: true, stdio: 'ignore' }).unref();
+  openPanel();
   detectLoop();
 });

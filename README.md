@@ -28,7 +28,7 @@ Control the presentation open on your Windows laptop from your phone, over the s
 2. Double-click it. The panel opens in your browser with a QR code; scan it with your phone.
 3. If Windows SmartScreen warns (the file is unsigned), choose **More info > Run anyway**. If Windows Firewall asks, allow **Private networks**.
 
-No Node.js or other software needed. Close the black window to quit.
+No Node.js or other software needed. There is no console window: use the panel's **close app** button to quit (double-clicking again just reopens the panel).
 
 ## Run from source
 

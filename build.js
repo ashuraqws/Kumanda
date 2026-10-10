@@ -20,4 +20,10 @@ fs.writeFileSync('dist/sea-config.json', JSON.stringify({ main: 'dist/server.cjs
 execFileSync(process.execPath, ['--experimental-sea-config', 'dist/sea-config.json'], { stdio: 'inherit' });
 fs.copyFileSync(process.execPath, 'dist/Kumanda.exe');
 inject('dist/Kumanda.exe', 'NODE_SEA_BLOB', fs.readFileSync('dist/sea.blob'), { sentinelFuse: 'NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2' })
-  .then(() => console.log('Hazır: dist/Kumanda.exe'));
+  .then(() => {
+    // PE alt sistemi konsol(3) -> GUI(2): çift tıklayınca siyah pencere açılmaz.
+    const b = fs.readFileSync('dist/Kumanda.exe');
+    b.writeUInt16LE(2, b.readUInt32LE(0x3c) + 24 + 68);
+    fs.writeFileSync('dist/Kumanda.exe', b);
+    console.log('Hazır: dist/Kumanda.exe');
+  });
